@@ -19,15 +19,15 @@ __global__ void mandel(float iterations[32*64][32*64]){
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
-    const float c_im = __int2float_rn(gid_x)/(32.*512.*512)-0.0999;
-    const float c_re = __int2float_rn(gid_y)/(32.*512.*512)-0.7492;
+    const double c_im = __int2double_rn(gid_x)/(32.*512.*5120000000000)-0.099871398;
+    const double c_re = __int2double_rn(gid_y)/(32.*512.*5120000000000)-0.749171400101;
     
     float iteration = 0;
         
-    float z_im = 0.;
-    float z_re = 0.;    
-    float z_im2 = 0.;
-    float z_re2 = 0.;    
+    double z_im = 0.;
+    double z_re = 0.;    
+    double z_im2 = 0.;
+    double z_re2 = 0.;    
     
     for(unsigned i=0; i<1000; ++i){
         if((z_re2 + z_im2) < 400){
@@ -59,7 +59,7 @@ mandel(cuda.InOut(iterations), block=(32, 32, 1), grid=(64, 64, 1))
 
 iterations = iterations
 
-plt.matshow(iterations, cmap='hsv')
+plt.matshow(iterations, cmap='flag')
 
 # plt.figure()
 # plt.hist(iterations.ravel(), bins=100)
