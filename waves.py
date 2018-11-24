@@ -12,25 +12,26 @@ from pycuda.compiler import SourceModule
 #  exterior_distance
 
 def mandel(center, zoom, resolution):
-    grid_size = int(resolution / 32 + 1)
+    grid_size = round(resolution / 32 + 0.5)
 
     KERNEL = f"""
     __global__ void mandel(float iterations[32*{grid_size}][32*{grid_size}]){{
         const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
         const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
     
-        const double c_im = {zoom}*(__int2double_rn(gid_x)/(32*{grid_size})-0.5) + {center[1]};
-        const double c_re = {zoom}*(__int2double_rn(gid_y)/(32*{grid_size})-0.5) + {center[0]};
+        const float c_im = {zoom:.16f}*(__int2float_rn(gid_x)/(32*{grid_size})-0.5) + {center[1]:.16f};
+        const float c_re = {zoom:.16f}*(__int2float_rn(gid_y)/(32*{grid_size})-0.5) + {center[0]:.16f};
         
-        double iteration = 0;
+        float iteration = 0;
             
-        double z_im = 0.;
-        double z_re = 0.;    
-        double z_im2 = 0.;
-        double z_re2 = 0.;    
+        float z_im = 0.;
+        float z_re = 0.;    
+        float z_im2 = 0.;
+        float z_re2 = 0.;    
         
-        for(unsigned i=0; i<1000; ++i){{
-            if((z_re2 + z_im2) < 400){{
+        #pragma unroll
+        for(unsigned i=0; i<10000; ++i){{
+            if((z_re2 + z_im2) < 100){{
             
                 z_im2 = z_im*z_im;
                 z_re2 = z_re*z_re;
@@ -43,7 +44,7 @@ def mandel(center, zoom, resolution):
         }}
         
         if((z_re2 + z_im2) > 4){{
-            iterations[gid_x][gid_y] = iteration + 1/log(2.) * log(log(400.)/(0.5*log(z_re2 + z_im2)));
+            iterations[gid_x][gid_y] = sin(log(iteration + 1/log(2.) * log(log(100.)/(0.5*log(z_re2 + z_im2))))*5);
         }} else {{
             iterations[gid_x][gid_y] = __int_as_float(0x7fffffff);
         }}
@@ -57,15 +58,14 @@ def mandel(center, zoom, resolution):
     return iterations
 
 
-center = np.array([-1, 0])
-zoom = 1
-iterations = mandel(center, zoom, 2048)
+center = np.array([0.3113, 0.03528])
+zoom = 0.001
+iterations = mandel(center, zoom, 16*1024)
 
 
-plt.matshow(iterations, cmap='seismic', extent=[center[0]-zoom, center[0]+zoom, center[1]-zoom, center[1]+zoom])
+plt.matshow(iterations, cmap='hsv', extent=[center[0]-zoom/2, center[0]+zoom/2, center[1]-zoom/2, center[1]+zoom/2], origin='lower')
 
 # plt.figure()
 # plt.hist(iterations.ravel(), bins=100)
 # plt.yscale('log', nonposy='clip')
-
 plt.show()
