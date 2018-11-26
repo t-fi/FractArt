@@ -120,9 +120,11 @@ def mandel_distance(center, zoom, resolution):
 
     return b
 
+# @2048*2048:
 # for float min~0.0001
-zoom = 0.0000001
-center = np.array([0.3495374, 0.066426])
+# for double min~0.0000000000001
+zoom = 0.0000000000001
+center = np.array([0.34953738586551997, 0.06642601431185])
 iterations = mandel(center, zoom, 2*1024)
 
 
