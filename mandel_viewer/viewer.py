@@ -1,6 +1,7 @@
 import sys
 import sdl2
 import sdl2.ext
+from .renderer import escape_time_gpu
 
 
 sdl2.ext.init()
