@@ -117,23 +117,3 @@ def mandel_distance(center, zoom):
     exterior_distance_gpu(cuda.InOut(b), np.float64(center[1]), np.float64(center[0]), np.float64(zoom),
                           block=(32, 32, 1), grid=(32, 32, 1))
     return b
-
-
-def test_run():
-    # @2048*2048:
-    # for float min~0.0001
-    # for double min~0.0000000000001
-    zoom = 3
-    center = np.array([0.34953738586551997, 0.06642601431185])
-    iterations = mandel(center, zoom)[:, :, 0]
-    plt.matshow(iterations, cmap='prism',
-                extent=[center[0] - zoom / 2, center[0] + zoom / 2, center[1] - zoom / 2, center[1] + zoom / 2],
-                origin='lower')
-    # plt.figure()
-    # plt.hist(iterations.ravel(), bins=100)
-    # plt.yscale('log', nonposy='clip')
-    plt.show()
-
-
-if __name__ == '__main__':
-    test_run()
