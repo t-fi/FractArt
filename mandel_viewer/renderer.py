@@ -14,13 +14,13 @@ from pycuda.compiler import SourceModule
 
 
 KERNELS = """
-#define precision double
+#define precision float
 
 __device__ double cabs(double re, double im){
         return sqrt(re*re + im*im);
 }
 
-__global__ void exterior_distance(float b[1024][1024], const double center_im, const double center_re, const double zoom){
+__global__ void exterior_distance(unsigned char image[1024][1024][3], const double center_im, const double center_re, const double zoom){
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -54,9 +54,14 @@ __global__ void exterior_distance(float b[1024][1024], const double center_im, c
         }
     }
     if(z_im2 + z_re2 > 1000){
-        b[gid_x][gid_y] = log(2 * cabs(z_re, z_im)*log(cabs(z_re, z_im))/cabs(dz_re, dz_im));
+        precision b = log(2 * cabs(z_re, z_im)*log(cabs(z_re, z_im))/cabs(dz_re, dz_im));
+        image[gid_y][gid_x][0] = (unsigned char)(255*sin(b+1));
+        image[gid_y][gid_x][1] = (unsigned char)(255*sin(b+2));
+        image[gid_y][gid_x][2] = (unsigned char)(255*sin(b+3));
     } else {
-        b[gid_x][gid_y] = __int_as_float(0x7fffffff);
+        image[gid_y][gid_x][0] = 0;
+        image[gid_y][gid_x][1] = 0;
+        image[gid_y][gid_x][2] = 0;
     }
 }
 
@@ -74,7 +79,7 @@ __global__ void escape_time(unsigned char image[1024][1024][3], const double cen
     precision z_im2 = 0.;
     precision z_re2 = 0.;    
 
-    for(unsigned i=0; i<10000; ++i){
+    for(unsigned i=0; i<50000; ++i){
         if((z_re2 + z_im2) < 100){
 
             z_im2 = z_im*z_im;
@@ -113,7 +118,7 @@ def mandel(center, zoom):
 
 
 def mandel_distance(center, zoom):
-    b = np.zeros((1024, 1024), dtype=np.float32)
-    exterior_distance_gpu(cuda.InOut(b), np.float64(center[1]), np.float64(center[0]), np.float64(zoom),
+    image = np.zeros((1024, 1024, 3), dtype=np.uint8)
+    exterior_distance_gpu(cuda.InOut(image), np.float64(center[1]), np.float64(center[0]), np.float64(zoom),
                           block=(32, 32, 1), grid=(32, 32, 1))
-    return b
+    return image

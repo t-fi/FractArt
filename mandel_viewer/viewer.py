@@ -1,7 +1,7 @@
 import sys
 import sdl2
 import sdl2.ext
-from mandel_viewer.renderer import mandel
+from mandel_viewer.renderer import mandel, mandel_distance
 
 sdl2.ext.init()
 window = sdl2.ext.Window("Huiii", size=(1024, 1024))
@@ -36,5 +36,5 @@ while True:
                 zoom /= 1.1
             if event.key.keysym.sym == sdl2.SDLK_MINUS:
                 zoom *= 1.1
-    windowArray[:, :, :3] = mandel(center, zoom)
+    windowArray[:, :, :3] = mandel_distance(center, zoom)
     window.refresh()
