@@ -88,10 +88,10 @@ __global__ void escape_time(unsigned char image[1024][1024][3], const double cen
     }
 
     if((z_re2 + z_im2) > 4){
-        iteration = log(iteration + 1/log(2.) * log(log(100.)/(0.5*log(z_re2 + z_im2))));
-        image[gid_y][gid_x][0] = (unsigned char)(255*sin(iteration*2));
-        image[gid_y][gid_x][1] = (unsigned char)(255*sin(iteration*5));
-        image[gid_y][gid_x][2] = (unsigned char)(255*sin(iteration*9));
+        iteration = sqrt(iteration + 1/log(2.) * log(log(100.)/(0.5*log(z_re2 + z_im2))));
+        image[gid_y][gid_x][0] = (unsigned char)(255*sin(iteration+1));
+        image[gid_y][gid_x][1] = (unsigned char)(255*sin(iteration+2));
+        image[gid_y][gid_x][2] = (unsigned char)(255*sin(iteration+3));
     } else {
         image[gid_y][gid_x][0] = 0;
         image[gid_y][gid_x][1] = 0;
