@@ -1,11 +1,10 @@
 import sys
 import sdl2
 import sdl2.ext
-from .renderer import escape_time_gpu
-
+from mandel_viewer.renderer import mandel
 
 sdl2.ext.init()
-window = sdl2.ext.Window("The Pong Game", size=(1024, 1024))
+window = sdl2.ext.Window("Huiii", size=(1024, 1024))
 window.show()
 
 windowSurf = sdl2.SDL_GetWindowSurface(window.window)
@@ -16,6 +15,9 @@ windowArray[:, :, 1].fill(000)  # G
 windowArray[:, :, 2].fill(255)  # R
 windowArray[:, :, 3].fill(128)  # A
 
+center = [0., 0.]
+zoom = 2.
+
 while True:
     events = sdl2.ext.get_events()
     for event in events:
@@ -23,9 +25,16 @@ while True:
             quit()
         if event.type == sdl2.SDL_KEYDOWN:
             if event.key.keysym.sym == sdl2.SDLK_UP:
+                center[1] -= zoom / 10
             elif event.key.keysym.sym == sdl2.SDLK_DOWN:
+                center[1] += zoom / 10
             elif event.key.keysym.sym == sdl2.SDLK_LEFT:
+                center[0] -= zoom / 10
             elif event.key.keysym.sym == sdl2.SDLK_RIGHT:
-
-            if event.key.keysym.sym == sdl2.SDLK_PLUS
+                center[0] += zoom / 10
+            if event.key.keysym.sym == sdl2.SDLK_PLUS:
+                zoom /= 1.1
+            if event.key.keysym.sym == sdl2.SDLK_MINUS:
+                zoom *= 1.1
+    windowArray[:, :, :3] = mandel(center, zoom)
     window.refresh()

@@ -14,6 +14,8 @@ from pycuda.compiler import SourceModule
 
 
 KERNELS = """
+#define precision double
+
 __device__ double cabs(double re, double im){
         return sqrt(re*re + im*im);
 }
@@ -22,19 +24,19 @@ __global__ void exterior_distance(float b[1024][1024], const double center_im, c
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
-    const double c_im = zoom*(__int2float_rn(gid_x)/1024-0.5) + center_im;
-    const double c_re = zoom*(__int2float_rn(gid_y)/1024-0.5) + center_re;
+    const precision c_im = zoom*(__int2float_rn(gid_x)/1024-0.5) + center_im;
+    const precision c_re = zoom*(__int2float_rn(gid_y)/1024-0.5) + center_re;
 
-    double dz_im = 0;
-    double dz_re = 1.;
+    precision dz_im = 0;
+    precision dz_re = 1.;
 
-    double _dz_im = 0;
-    double _dz_re = 1.;
+    precision _dz_im = 0;
+    precision _dz_re = 1.;
       
-    double z_im = 0;
-    double z_re = 0;    
-    double z_im2 = 0.;
-    double z_re2 = 0.;    
+    precision z_im = 0;
+    precision z_re = 0;    
+    precision z_im2 = 0.;
+    precision z_re2 = 0.;    
 
     for(unsigned i=0; i<10000; ++i){
         if(z_im2 + z_re2 < 1000){
@@ -62,15 +64,15 @@ __global__ void escape_time(unsigned char image[1024][1024][3], const double cen
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
-    const double c_im = zoom*(__int2float_rn(gid_x)/1024-0.5) + center_im;
-    const double c_re = zoom*(__int2float_rn(gid_y)/1024-0.5) + center_re;
+    const precision c_im = zoom*(__int2float_rn(gid_x)/1024-0.5) + center_im;
+    const precision c_re = zoom*(__int2float_rn(gid_y)/1024-0.5) + center_re;
 
-    double iteration = 0;
+    float iteration = 0;
 
-    double z_im = 0.;
-    double z_re = 0.;    
-    double z_im2 = 0.;
-    double z_re2 = 0.;    
+    precision z_im = 0.;
+    precision z_re = 0.;    
+    precision z_im2 = 0.;
+    precision z_re2 = 0.;    
 
     for(unsigned i=0; i<10000; ++i){
         if((z_re2 + z_im2) < 100){
@@ -87,13 +89,13 @@ __global__ void escape_time(unsigned char image[1024][1024][3], const double cen
 
     if((z_re2 + z_im2) > 4){
         iteration = log(iteration + 1/log(2.) * log(log(100.)/(0.5*log(z_re2 + z_im2))));
-        image[gid_x][gid_y][0] = (unsigned char)(255*sin(iteration));
-        image[gid_x][gid_y][1] = (unsigned char)(255*sin(iteration+1));
-        image[gid_x][gid_y][2] = (unsigned char)(255*sin(iteration+2));
+        image[gid_y][gid_x][0] = (unsigned char)(255*sin(iteration*2));
+        image[gid_y][gid_x][1] = (unsigned char)(255*sin(iteration*5));
+        image[gid_y][gid_x][2] = (unsigned char)(255*sin(iteration*9));
     } else {
-        image[gid_x][gid_y][0] = 0;
-        image[gid_x][gid_y][1] = 0;
-        image[gid_x][gid_y][2] = 0;
+        image[gid_y][gid_x][0] = 0;
+        image[gid_y][gid_x][1] = 0;
+        image[gid_y][gid_x][2] = 0;
     }
 }
 """
