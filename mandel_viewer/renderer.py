@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-
 import numpy as np
 
 import pycuda.driver as cuda
@@ -20,7 +18,8 @@ __device__ double cabs(double re, double im){
         return sqrt(re*re + im*im);
 }
 
-__global__ void exterior_distance(unsigned char image[1024][1024][3], const double center_im, const double center_re, const double zoom){
+__global__ void exterior_distance(unsigned char image[1024][1024][3],
+                                  const double center_im, const double center_re, const double zoom){
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -65,7 +64,8 @@ __global__ void exterior_distance(unsigned char image[1024][1024][3], const doub
     }
 }
 
-__global__ void escape_time(unsigned char image[1024][1024][3], const double center_im, const double center_re, const double zoom){
+__global__ void escape_time(unsigned char image[1024][1024][3],
+                            const double center_im, const double center_re, const double zoom){
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
