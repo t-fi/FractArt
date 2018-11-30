@@ -4,15 +4,8 @@ import pycuda.driver as cuda
 import pycuda.autoinit
 from pycuda.compiler import SourceModule
 
-# TODO:
-#   choose random point in [-2..1 + -1..1i]
-#   calculate exterior distance D => throw away if NaN
-#   Render img around point with zoom D
-#   Subsample img
-
-
 KERNELS = """
-#define precision float
+#define precision double
 
 __device__ double cabs(double re, double im){
         return sqrt(re*re + im*im);

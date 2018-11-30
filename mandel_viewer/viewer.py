@@ -36,5 +36,6 @@ while True:
                 zoom /= 1.1
             if event.key.keysym.sym == sdl2.SDLK_MINUS:
                 zoom *= 1.1
-    windowArray[:, :, :3] = mandel_distance(center, zoom)
+    windowArray[:, :, :3] = mandel(center, zoom)
+    #windowArray[:, :, :3] = mandel_distance(center, zoom)
     window.refresh()
