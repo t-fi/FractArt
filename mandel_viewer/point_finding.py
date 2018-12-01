@@ -6,14 +6,13 @@ import pycuda.driver as cuda
 import pycuda.autoinit
 from pycuda.compiler import SourceModule
 
+from tqdm import tqdm
+
 from mandel_viewer.renderer import mandel
 
-# TODO:
-#   choose random point in [-2..1 + -1..1i]
-#   calculate exterior distance D => throw away if NaN
-#   Render img around point with zoom D
-#   Subsample img
-
+import cv2
+import blosc
+import multiprocessing as mp
 
 KERNELS = """
 #define precision double
@@ -67,24 +66,37 @@ mod = SourceModule(KERNELS)
 exterior_distance_gpu = mod.get_function('exterior_distance')
 
 
+def exterior_distances(im, re):
+    b = np.zeros_like(im)
+    exterior_distance_gpu(cuda.In(im), cuda.In(re), cuda.InOut(b),
+                          grid=(b.size // 1024, 1, 1), block=(1024, 1, 1))
+    return b
+
+
+def process_and_store_image(image, re, im, zoom):
+    image = cv2.GaussianBlur(image, (3, 3), cv2.BORDER_DEFAULT)
+    image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
+    cv2.imwrite(f'/home/oba/Dropbox/Kunst/generated_fractals/{re:.16f}_{im:.16f}_{zoom:.16f}.png', image)
+    # c = blosc.compress_ptr(image.__array_interface__['data'][0], image.size, image.dtype.itemsize, 9, True)
+    # np.save(f'/home/oba/Dropbox/Kunst/generated_fractals/{re:.16f}_{im:.16f}_{zoom:.16f}', c, False)
+
+
 def gather_samples(num_blocks):
     re = np.random.uniform(-2, 0.48, 32 * 32 * num_blocks).astype(np.float64)
     im = np.random.uniform(-2, 0.48, 32 * 32 * num_blocks).astype(np.float64)
     b = exterior_distances(im, re)
-    valid_indices = np.logical_and(b > -20, b < -10)
+    valid_indices = np.logical_and(b > -35, b < -25)
     re = re[valid_indices]
     im = im[valid_indices]
     b = np.exp(b[valid_indices])
-    for im_, re_, b_ in zip(im, re, b):
-        print(im_, re_, b_)
-        plt.imshow(mandel([re_, im_], b_ * 5))
-        plt.show()
+    p = []
+    for im_, re_, b_ in tqdm(zip(im, re, b), total=b.size):
+        zoom = b_ * 500
+        image = mandel([re_, im_], zoom)
+        p.append(mp.Process(target=process_and_store_image, args=[image, re_, im_, zoom]))
+        p[-1].start()
+        # plt.imshow(image, origin='lower')
+        # plt.show()
 
 
-def exterior_distances(im, re):
-    b = np.zeros_like(im)
-    exterior_distance_gpu(cuda.In(im), cuda.In(re), cuda.InOut(b), grid=(b.size // 1024, 1, 1), block=(1024, 1, 1))
-    return b
-
-
-gather_samples(1)
+gather_samples(128)
