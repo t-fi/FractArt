@@ -76,7 +76,7 @@ def exterior_distances(im, re):
 def process_and_store_image(image, re, im, zoom):
     image = cv2.GaussianBlur(image, (3, 3), cv2.BORDER_DEFAULT)
     image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
-    cv2.imwrite(f'/home/oba/Dropbox/Kunst/generated_fractals/{re:.16f}_{im:.16f}_{zoom:.16f}.png', image)
+    cv2.imwrite(f'/home/oba/Dropbox/Kunst/generated_fractals/{re:.20e}_{im:.20e}_{zoom:.20e}.png', image)
     # c = blosc.compress_ptr(image.__array_interface__['data'][0], image.size, image.dtype.itemsize, 9, True)
     # np.save(f'/home/oba/Dropbox/Kunst/generated_fractals/{re:.16f}_{im:.16f}_{zoom:.16f}', c, False)
 
@@ -99,4 +99,4 @@ def gather_samples(num_blocks):
         # plt.show()
 
 
-gather_samples(128)
+gather_samples(1280)
