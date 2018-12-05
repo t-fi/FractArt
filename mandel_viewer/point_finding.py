@@ -75,20 +75,14 @@ def exterior_distances(im, re):
 
 def process_and_store_image(image, re, im, zoom):
     image = cv2.GaussianBlur(image, (3, 3), cv2.BORDER_DEFAULT)
-    image = cv2.resize(image, (256, 256), interpolation=cv2.INTER_AREA)
+    image = cv2.resize(image, (16*256, 16*256), interpolation=cv2.INTER_AREA)
     cv2.imwrite(f'/home/oba/Dropbox/Kunst/generated_fractals/{re:.20e}_{im:.20e}_{zoom:.20e}.png', image)
     # c = blosc.compress_ptr(image.__array_interface__['data'][0], image.size, image.dtype.itemsize, 9, True)
     # np.save(f'/home/oba/Dropbox/Kunst/generated_fractals/{re:.16f}_{im:.16f}_{zoom:.16f}', c, False)
 
 
 def gather_samples(num_blocks):
-    re = np.random.uniform(-2, 0.48, 32 * 32 * num_blocks).astype(np.float64)
-    im = np.random.uniform(-2, 0.48, 32 * 32 * num_blocks).astype(np.float64)
-    b = exterior_distances(im, re)
-    valid_indices = np.logical_and(b > -35, b < -25)
-    re = re[valid_indices]
-    im = im[valid_indices]
-    b = np.exp(b[valid_indices])
+    b, im, re = generate_coordinates(num_blocks)
     p = []
     for im_, re_, b_ in tqdm(zip(im, re, b), total=b.size):
         zoom = b_ * 500
@@ -99,4 +93,19 @@ def gather_samples(num_blocks):
         # plt.show()
 
 
-gather_samples(1280)
+def generate_coordinates(num_blocks):
+    re = np.random.uniform(-2, 0.48, 32 * 32 * num_blocks).astype(np.float64)
+    im = np.random.uniform(-1.2, 1.2, 32 * 32 * num_blocks).astype(np.float64)
+    b = exterior_distances(im, re)
+    valid_indices = np.logical_and(b > -35, b < -25)
+    re = re[valid_indices]
+    im = im[valid_indices]
+    b = np.exp(b[valid_indices])
+    return b, im, re
+
+
+gather_samples(256)
+
+# _, _im, _re = generate_coordinates(32*32*32)
+# plt.hist2d(_re, _im, 100, range=[[-2, 0.5], [-1.25, 1.25]])
+# plt.show()
