@@ -10,7 +10,7 @@ KERNELS = """
 #define precision double
 #define resolution 16*1024
 
-__device__ double cabs(double re, double im){
+__device__ precision cabs(precision re, precision im){
         return sqrt(re*re + im*im);
 }
 
