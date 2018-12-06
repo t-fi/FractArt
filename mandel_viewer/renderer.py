@@ -19,8 +19,8 @@ __global__ void exterior_distance(unsigned char image[resolution][resolution][3]
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
-    const precision c_im = zoom*(__int2precision_rn(gid_x)/resolution-0.5) + center_im;
-    const precision c_re = zoom*(__int2precision_rn(gid_y)/resolution-0.5) + center_re;
+    const precision c_im = zoom*(__int2double_rn(gid_x)/resolution-0.5) + center_im;
+    const precision c_re = zoom*(__int2double_rn(gid_y)/resolution-0.5) + center_re;
 
     precision dz_im = 0;
     precision dz_re = 1.;
@@ -65,8 +65,8 @@ __global__ void escape_time(unsigned char image[resolution][resolution][3],
     const int gid_x = threadIdx.x + blockIdx.x * blockDim.x;
     const int gid_y = threadIdx.y + blockIdx.y * blockDim.y;
 
-    const precision c_im = zoom*(__int2precision_rn(gid_x)/resolution-0.5) + center_im;
-    const precision c_re = zoom*(__int2precision_rn(gid_y)/resolution-0.5) + center_re;
+    const precision c_im = zoom*(__int2double_rn(gid_x)/resolution-0.5) + center_im;
+    const precision c_re = zoom*(__int2double_rn(gid_y)/resolution-0.5) + center_re;
 
     float iteration = 0;
 
